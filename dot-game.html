@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Achenbach's Dot Path Game!</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+</head>
+<body>
+    <p align="center"> 
+      <canvas id="mycanvas"></canvas> 
+    </p>
+</body>
+ 
+ <!-- Run all the JavaScript stuff -->
+ <!-- Include the processing.js library -->
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+
+ <script>
+
+var decideDimensions = function () {
+    // Returns a numeric value to be used both as canvas width and height
+
+    var width = window.innerWidth 
+    || document.documentElement.clientWidth
+    || document.body.clientWidth;
+
+    var height = window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight;
+
+    if (width < height) {
+        return width;
+    } else {
+        return height;
+    }
+};
+
+var dimensionDecision = decideDimensions();
+
+var sketchProc = function(processingInstance) 
+{with (processingInstance) {size(dimensionDecision, dimensionDecision); frameRate(30);
+
+        
+
+
+
+
+// ============================================================================
+//                      P A T H      D O T       G A M E 
+//                  ________________________________________
+//       
+//                           by Chris Achenbach
+// ____________________________________________________________________________
+
+
+
+//  ooooo   ooooo           oooo  oooo                
+//  `888'   `888'           `888  `888                
+//   888     888   .ooooo.   888   888   .ooooo.      
+//   888ooooo888  d88' `88b  888   888  d88' `88b     
+//   888     888  888ooo888  888   888  888   888     
+//   888     888  888    .o  888   888  888   888 .o. 
+//  o888o   o888o `Y8bod8P' o888o o888o `Y8bod8P' Y8P 
+//                                                    
+//                                                    
+//                                                    
+
+
+// __________________________________________________________________________
+
+//  oooooo     oooo                    
+//   `888.     .8'                     
+//    `888.   .8'    .oooo.   oooo d8b 
+//     `888. .8'    `P  )88b  `888""8P 
+//      `888.8'      .oP"888   888     
+//       `888'      d8(  888   888     
+//        `8'       `Y888""8o d888b    
+//                                     
+//                                     
+//                                     
+
+// ============================================================
+//    Global Variables
+// ------------------------------------------------------------
+
+var numberOfPointsX = 5;
+var numberOfPointsY = 5;
+
+
+var dotRadius = (width + height) /  (numberOfPointsX + numberOfPointsY ) / 5 ;
+var factorX = width / (numberOfPointsX + 1);
+var factorY = height / (numberOfPointsY + 1);
+
+// Initializes a 2-dimensional Array[][] which will hold Point objects.
+var grid = new Array(numberOfPointsX);
+for (var i = grid.length - 1; i >= 0; i--) {
+    grid[i] = new Array(numberOfPointsY);
+}
+
+// swap counter is displayed on the front screen, kind of like a score.
+var swapCounter = 0;
+
+// Determining a good Font Size based on the dimensions of canvas.
+var regularFontSize;
+if (factorX < factorY) {
+    regularFontSize = factorX / 4;
+} else {
+    regularFontSize = factorY / 4;
+}
+
+
+// Draw Blank Area in case there are other weird things happening.
+fill(255,255,255); stroke(255,255,255);
+rect(0,0,width,height);
+
+
+
+// __________________________________________________________________________
+
+//   .oooooo..o               .            
+//  d8P'    `Y8             .o8            
+//  Y88bo.       .ooooo.  .o888oo  .oooo.o 
+//   `"Y8888o.  d88' `88b   888   d88(  "8 
+//       `"Y88b 888ooo888   888   `"Y88b.  
+//  oo     .d8P 888    .o   888 . o.  )88b 
+//  8""88888P'  `Y8bod8P'   "888" 8""888P' 
+//                                         
+//                                         
+//                                         
+// __________________________________________________________________________
+// ============================================================
+// Object: Set   
+// ------------------------------------------------------------
+
+var mySet = function () {
+    this.elements = [];
+};
+
+
+mySet.prototype.add = function (newElement) {
+    if (this.elements.includes(newElement)) {
+        return this.items;
+    } else {
+        return this.elements.push(newElement);
+    }
+};
+
+mySet.prototype.addArray = function (newArray) {
+    for (var i = newArray.length - 1; i >= 0; i--) {
+        this.add(newArray[i]);
+    }
+    return this.elements;
+};
+
+mySet.prototype.unite = function (obj) {
+    for (var i = 0; i < obj.elements.length; i++) {
+        this.add(obj.elements[i]);
+    }
+    return this.elements;
+};
+
+mySet.prototype.includes = function(checkElement) {
+    return this.elements.includes(checkElement);
+};
+
+
+mySet.prototype.equals = function (obj) {
+    // To prove that two set are equal to each other, 
+    // every element of each set must be in the other set.
+
+    if (obj.elements.length !== this.elements.length) {
+        return false;
+    }
+    for (var i = this.elements.length - 1; i >= 0; i--) {
+        if (!(obj.elements.includes(this.elements[i]))) {
+            return false;
+        }
+    }
+    for (var i = obj.elements.length - 1; i >= 0; i--) {
+        if (!(this.elements.includes(obj.elements[i]))) {
+            return false;
+        }   
+    }
+    return true;
+};
+
+
+
+mySet.prototype.print = function () {
+    return println(this.elements);
+};
+
+
+mySet.prototype.toString = function () {
+    var text = '';
+    for (var i = this.elements.length - 1; i >= 0; i--) {
+        text.concat(this.elements[i].toString());
+    }
+    return text;
+};
+
+
+
+
+
+
+
+// __________________________________________________________________________
+
+//  ooooooooo.              o8o                  .   
+//  `888   `Y88.            `"'                .o8   
+//   888   .d88'  .ooooo.  oooo  ooo. .oo.   .o888oo 
+//   888ooo88P'  d88' `88b `888  `888P"Y88b    888   
+//   888         888   888  888   888   888    888   
+//   888         888   888  888   888   888    888 . 
+//  o888o        `Y8bod8P' o888o o888o o888o   "888" 
+//                                                   
+//                                                   
+//                                                   
+// __________________________________________________________________________
+// ============================================================
+//    Object: Point
+// ------------------------------------------------------------
+// Create the Object "Point"
+// Point A,B is on the grid.  The very first point is A = 1, and B = 1.
+// Point.color is a string that should be either 'red' or 'blue'
+
+var Point = function (A, B) {
+    this.A = A;
+    this.B = B;
+    this.x = this.A * factorX;
+    this.y = this.B * factorY;
+    this.bridges = [];
+    this.color = '';
+};
+
+
+
+Point.prototype.toString = function () {
+    return '(' + this.A + ', ' + this.B + ')';
+};
+
+
+Point.prototype.getSetOfAdjPoints = function () {
+    // AdjacentPoints are the points that surround the initial point,
+    //    in the 4 cardinal directions.  Returns a set of points.
+    //
+    // returns: -> 2 points at corners,
+    //          -> 3 points at edges,
+    //          -> 4 points in other positions.
+
+    var adj = new mySet();
+
+    // Left  
+    if (this.A > 1) {
+        adj.add(new Point(this.A - 1, this.B).convertToValue());    }
+    // Right
+    if (this.A < numberOfPointsX) {
+        adj.add(new Point(this.A + 1, this.B).convertToValue());    }
+    // Up
+    if (this.B > 1) {
+        adj.add(new Point(this.A, this.B - 1).convertToValue());    }
+    // Down
+    if (this.B < numberOfPointsY) {
+        adj.add(new Point(this.A, this.B + 1).convertToValue());    }
+
+    return adj;
+};
+
+
+
+Point.prototype.randomizeColor = function () {
+    // randomizeColor will use a random number to assign either 'red' or 'blue'
+    // should only be used at the beginning of a new game.
+
+    var rand = random(0,2);
+    if (rand > 1)   {this.color = 'BLUE';}
+    if (rand <= 1)  {this.color = 'RED';}
+};
+
+
+
+Point.prototype.draw = function () {
+    // draw will use processing shapes to actually draw the point on canvas.
+    // draw REQUIRES that a dotRadius has been globally specified.
+
+    noStroke();
+    if (this.color === 'BLUE') {fill (0, 150, 255);}
+    if (this.color === 'RED')  {fill (255, 0, 0);}
+    ellipse (this.x, this.y, dotRadius, dotRadius);
+};
+
+
+
+Point.prototype.swap = function(point2) {
+    // Swapping points causes 1 Point to trade color values with 1 other Point.
+
+    var oldColor = this.color;
+    this.color = point2.color;
+    point2.color = oldColor;
+};
+
+
+
+Point.prototype.highlight = function(choice) {
+    // Highlighting support. Simply the visual changes affecting the Point.
+    // @param choice is a boolean that determines highlight ON or OFF.
+
+    if (choice === true) {
+        noFill();
+        stroke(227, 221, 102);
+        strokeWeight(dotRadius - 1);
+        ellipse(this.x, this.y, 2*dotRadius, 2*dotRadius);
+    } 
+
+    if (choice === false) {
+        noFill();
+        stroke(255, 255, 255);
+        strokeWeight(dotRadius - 1);
+        ellipse(this.x, this.y, 2*dotRadius, 2*dotRadius);    
+    }
+};
+
+
+
+
+Point.prototype.convertToValue = function() {
+    // Converts a Point into a numeric value, based on total number of points
+    // Designed like the grid[x][y], 
+    // example: in a 5x5 grid, point grid[1][3] corresponds to value = 11
+
+    return ((this.A - 1) * numberOfPointsY + this.B);
+};
+
+
+var convertValueToPoint = function (input) {
+    // Converting a numeric value into a Point is NOT a method of object Point.
+    // but it will be placed here in the code, because of it's relevence.
+    // Returns a Point(A,B) object.
+    
+    var B = (input) % (numberOfPointsY);
+    if (B === 0) {B = numberOfPointsY;}
+    var A = (input - B) / numberOfPointsY + 1;
+    A--;
+    B--;
+    return grid[A][B];
+};
+
+var gimmePointValue = function (A, B) {
+    return ((A - 1) * numberOfPointsY + B);
+};
+
+
+mySet.prototype.displayPoints = function() { 
+    var values = [];
+    for (var i = this.elements.length - 1; i >= 0; i--) {
+        values.push(convertValueToPoint(this.elements[i]).toString());
+    }
+    return values;
+};
+
+
+// __________________________________________________________________________
+//
+//
+//    .oooooo.   oooo                   o8o              
+//   d8P'  `Y8b  `888                   `"'              
+//  888           888 .oo.    .oooo.   oooo  ooo. .oo.   
+//  888           888P"Y88b  `P  )88b  `888  `888P"Y88b  
+//  888           888   888   .oP"888   888   888   888  
+//  `88b    ooo   888   888  d8(  888   888   888   888  
+//   `Y8bood8P'  o888o o888o `Y888""8o o888o o888o o888o 
+//                 
+//
+// __________________________________________________________________________
+// ============================================================
+//    Object: Chain
+// ------------------------------------------------------------
+// Chain object represents a Set of Points that are connected to each other,
+// Because Sets are unordered, a Chain only implies connectiveness.
+//  + knownLinks are the Set of all connected Points of the chainColor.
+//  + discoveredLinks are the Set of Points are newly connected Links
+//  + nextToCheck is an array of Points, representing newfound unique links.
+//
+// Note: ALL Points are the in the form of Numeric Values
+// use either  Point.convertToValue();  OR  convertValueToPoint(int);
+
+var Chain = function (chainColor) {
+    this.knownLinks = new mySet();
+    this.discoveredLinks = new mySet();
+    this.nextToCheck = [];
+    this.chainColor = chainColor;
+};
+
+
+
+Chain.prototype.findFirstLink = function () {
+    // Looks through the grid until it finds a Point of the specified color.
+    // if found, return that Point, otherwise return false.
+
+    for (var i = grid.length - 1; i >= 0; i--) {
+        for (var j = grid[i].length - 1; j >= 0; j--) {
+            if (grid[i][j].color === this.chainColor) {
+                // println("First link = " + grid[i][j]);
+                this.knownLinks.add(grid[i][j].convertToValue());
+                return grid[i][j].convertToValue();
+            } 
+        }
+    }
+    // println("There are no points of this color AT ALL.");
+    return false;
+};
+
+
+
+Chain.prototype.findPotentialLinks = function () { 
+    // findPotentialLinks takes Points out of the nextToCheck array,
+    // for each nextToCheck Point,
+    //  1. Checks if that Point is of the same color as the Chain's Color.
+    //  2. Add the adjacent Points to the set of discoveredLinks.
+
+    for (var i = this.nextToCheck.length - 1; i >= 0; i--) {
+
+        var nextPoint = convertValueToPoint(this.nextToCheck.pop());
+        // println('checking... ('+ nextPoint.A + ',' + nextPoint.B + ')');
+
+        var adjPoints = nextPoint.getSetOfAdjPoints().elements;
+
+        for (var i = adjPoints.length - 1; i >= 0; i--) {
+            if (convertValueToPoint(adjPoints[i]).color === this.chainColor) {
+                this.discoveredLinks.add(adjPoints[i]);
+            }
+        }
+    }
+};
+
+
+Chain.prototype.checkDiscoveredLinks = function() {
+    // checkDiscoveredLinks basically just moves data around.
+    //  1. Adds points we HAVE NOT SEEN BEFORE into list we WILL check later.
+    //  2. Adds set of discovered points into the main set of KnownLinks.
+
+    for (var i = this.discoveredLinks.elements.length - 1; i >= 0; i--) {
+        var nextElement = this.discoveredLinks.elements[i];
+        if (!(this.knownLinks.includes(nextElement))) {
+            this.nextToCheck.push(nextElement);
+            // println('New Link Discovered! ' + convertValueToPoint(nextElement).toString());
+        }
+    }
+    this.knownLinks.unite(this.discoveredLinks);
+    this.discoveredLinks.elements = [];
+};
+
+
+
+Chain.prototype.formChain = function () {
+    // formChain ties everything together to form SET of connected Points.
+    //   LOOP:  1. Find some new Links.
+    //          2. check to see if we've already found those links.
+    //          3. Leave if there are no more unique links to find.
+
+    var tracerCount = 0;
+    var firstPoint = this.findFirstLink();
+    this.nextToCheck.push(firstPoint);
+
+    while (this.nextToCheck.length !== 0) {
+        this.findPotentialLinks();
+        this.checkDiscoveredLinks();
+        tracerCount++;
+    }
+
+    // println('Iterations: ' + tracerCount);
+   
+    return this.knownLinks;
+};
+
+
+
+
+
+
+// __________________________________________________________________________
+
+
+//  oooooooooo.                                       
+//  `888'   `Y8b                                      
+//   888      888 oooo d8b  .oooo.   oooo oooo    ooo 
+//   888      888 `888""8P `P  )88b   `88. `88.  .8'  
+//   888      888  888      .oP"888    `88..]88..8'   
+//   888     d88'  888     d8(  888     `888'`888'    
+//  o888bood8P'   d888b    `Y888""8o     `8'  `8'     
+//                                                    
+//                                                    
+//  
+// ________________________________________________________________________  
+// ============================================================
+//   Startup Drawing Functions - MAX uses: Once Per Game
+// ------------------------------------------------------------
+
+// initializePoints should only be used once, all of the points are created
+var initializePoints = function () {
+    for (var i = 0; i < numberOfPointsX; i++) {
+        for (var j = 0; j < numberOfPointsX; j++) {
+            var somePoint = new Point(i + 1, j + 1);
+            somePoint.randomizeColor();
+            somePoint.draw();
+            grid[i][j] = somePoint;
+        }
+    }
+};
+
+
+for (var i = numberOfPointsX - 1; i >= 0; i--) {
+}
+
+// Draw the "Scoreboard".  This only needs to happen ONCE.
+var initializeScoreboard = function () {
+    fill(0,0,0); noStroke();
+    textSize(regularFontSize);
+    text("Swaps: ", 2,  height - factorY/4);
+    // text("Bridges: ", 200, 30);
+    text('Swap Points by Clicking them.', 2 , factorY/4);
+    text('Win by creating Two Separate Paths!', 2 , factorY/2);
+};
+
+var reDrawBoard = function () {
+    noStroke(); fill(255,255,255); 
+    rect(factorX , height - factorY/2, factorX/2 ,factorY/2 );
+    stroke(255,255,255); fill(0,0,0); textSize(regularFontSize); 
+    text(swapCounter, factorX , height - factorY/4);
+};
+
+
+var clearBoard = function () {
+    noStroke();
+    fill(255, 255, 255);
+    rect(0,0, width, height - factorY/2);
+};
+
+
+// ============================================================
+//   Drawing Functions
+// ------------------------------------------------------------
+
+// draw All of the Points that are in the current Grid Array onto the canvas.
+
+var drawAllPoints = function() {
+    for (var i = grid.length - 1; i >= 0; i--) {
+        for (var j = grid[i].length - 1; j >= 0; j--) {
+            grid[i][j].draw();
+        }
+    }
+};
+
+
+// Draws a Solid Colored Line (blue or red) between two given points,
+// if the points are NOT matching colors, a thin gray line will be drawn.
+
+var drawLineBetweenPoints = function(point1, point2) {
+    noFill();
+    if (point1.color === point2.color) {
+        strokeWeight(4);
+        if (point1.color === 'RED')   {stroke(255, 0, 0);}
+        if (point1.color === 'BLUE')  {stroke(0, 150, 255);}
+    } else {
+        strokeWeight(1);
+        stroke(200, 200, 200);
+    }
+    line(point1.x, point1.y, point2.x, point2.y);
+};
+
+
+// drawGridLines will draw the grid lines, AND color the lines between links.
+// This command should be used DIRECTLY BEFORE calling drawPoints,
+//     in order to prevent lines from being drawn on top of the points.
+
+var drawGridLines = function() {
+    //Horizontal Lines
+    for (var i = grid.length - 2; i >= 0; i--) {
+        for (var j = grid[i].length - 1; j >= 0; j--) {
+            drawLineBetweenPoints(grid[i][j], grid[i + 1][j]);
+        }
+    }
+    // Vertical Lines
+    for (var i = grid.length - 1; i >= 0; i--) {
+        for (var j = grid[i].length - 2; j >= 0; j--) {
+            drawLineBetweenPoints(grid[i][j], grid[i][j + 1]);
+        }
+    }
+};
+
+
+
+
+
+
+// __________________________________________________________________________
+
+
+//  oooooooooooo                         
+//  `888'     `8                         
+//   888         oooo  oooo  ooo. .oo.   
+//   888oooo8    `888  `888  `888P"Y88b  
+//   888    "     888   888   888   888  
+//   888          888   888   888   888  
+//  o888o         `V88V"V8P' o888o o888o 
+//                                                         
+//                                                         
+//                                                                                                                                       
+// __________________________________________________________________________
+
+
+
+var buildAllChains = function () {
+    // buildAllChains will initialize the Chain objects for the desired colors,
+    // and then it will simply activate the built-in formChain function.
+
+    println('===================');
+    println('RED CHAIN');
+    println('-------------------');
+    var RedChain = new Chain('RED');
+    RedChain.formChain();
+    println('Links in Red chain = ' + RedChain.knownLinks.displayPoints());
+
+    println('===================');
+    println('Blue CHAIN');
+    println('-------------------');
+    var BlueChain = new Chain('BLUE');
+    BlueChain.formChain();
+    println('Links in Blue chain = ' + BlueChain.knownLinks.displayPoints());
+};
+
+
+var findAllPointsOfColor = function(myColor) {
+    // Looks through the whole grid and finds all points of choosen color.
+    // returns ARRAY
+
+    var stuff = new mySet();
+    for (var i = 0; i < numberOfPointsX; i++) {
+        for (var j = 0; j < numberOfPointsX; j++) {
+            if (myColor === grid[i][j].color) {
+                stuff.add( gimmePointValue(i + 1, j + 1) );
+            }
+        }
+    }
+    return stuff;
+};
+
+var victory = false;
+var checkForVictory = function() {
+    var AllReds = findAllPointsOfColor('RED');
+    var RedChain = new Chain('RED');
+    RedChain.formChain();
+    // println(RedChain.knownLinks.elements);
+    // println(AllReds.elements);
+
+    if (!RedChain.knownLinks.equals(AllReds)) {return;}
+    
+    var AllBlues = findAllPointsOfColor('BLUE');
+    var BlueChain = new Chain('BLUE');
+    BlueChain.formChain();
+
+    if (!BlueChain.knownLinks.equals(AllBlues)) {return;}
+
+    victory = true;
+    fill(255, 255, 255); stroke(255, 255, 255);
+    rect(0,0,width,width/8);
+    fill(31, 194, 102); stroke(10, 10, 10); textSize(width/6);
+    text("You ", 10, width/8+1);
+    text("Win! ", 200, width/8+1);
+    fill(0,0,0); textSize(18);
+    text('Click Anywhere to Restart.', 150, height-20);
+};
+
+
+
+
+
+
+// __________________________________________________________________________
+//  ooo        ooooo                                          
+//  `88.       .888'                                          
+//   888b     d'888   .ooooo.  oooo  oooo   .oooo.o  .ooooo.  
+//   8 Y88. .P  888  d88' `88b `888  `888  d88(  "8 d88' `88b 
+//   8  `888'   888  888   888  888   888  `"Y88b.  888ooo888 
+//   8    Y     888  888   888  888   888  o.  )88b 888    .o 
+//  o8o        o888o `Y8bod8P'  `V88V"V8P' 8""888P' `Y8bod8P' 
+//                                                            
+//                                                            
+//                                                            
+// __________________________________________________________________________
+
+// ===========================================================================
+var getPointYouClicked = function (myMouseQ, factorQ, numberOfPointsQ) {
+    // Determine if you are on a point, in Q direction 
+    //    ( Q can be either X or Y).
+
+    var point;
+    var myDiv = (myMouseQ - (myMouseQ % factorQ)) / factorQ;
+    var myMod = (myMouseQ) % factorQ;
+    
+    if (myMod <= ((factorQ) / 2)) {
+        point = myDiv;
+    } else {
+        point = myDiv + 1;
+    }
+    
+    if ((point < 1) || (point > numberOfPointsQ)) {
+        return "_";
+    }
+    
+    if ((myMod < dotRadius) || (myMod > (factorQ - dotRadius))) {
+        return point;
+    }
+    
+    return "_";
+};
+// ---------------------------------------------------------------------------
+
+
+
+var savedPToggle = false;   // True if ANY point is Highlighted.
+var savedPA; var savedPB;
+
+// ===========================================================================
+mouseClicked = function() { 
+    // Function that occurs whenever the mouse is clicked.
+    // Highlights a point if there is nothing currently selected,
+    // Swaps points if there is.
+    // Removes Hihlights if you reclick the same point.
+
+    if (victory === true){
+        victory = false;
+        return startupProcedure();
+    }
+    
+    var myA = getPointYouClicked(mouseX, factorX, numberOfPointsX);
+    var myB = getPointYouClicked(mouseY, factorY, numberOfPointsY);
+    
+    if (myA !== '_' && myB !== '_'){
+        // This happens whenever you successfully click on a point.
+        
+        myA--; myB--;
+        // println(savedPA + ',' + savedPB);
+
+        if (savedPToggle === true) {
+        
+            if (savedPA === myA && savedPB === myB) {
+                grid[myA][myB].highlight(false);
+            } else {
+                // println('swapping.. ' + grid[savedPA][savedPB] + ' with ' + grid[myA][myB]);
+                grid[savedPA][savedPB].highlight(false);
+                clearBoard();
+
+                //println(grid[savedPA][savedPB].color);
+
+                grid[savedPA][savedPB].swap(grid[myA][myB]);
+
+                //println(grid[savedPA][savedPB].color);
+                swapCounter++;
+                reDrawBoard();
+                checkForVictory();
+            }
+          
+            savedPA = -1; savedPB = -1;
+            savedPToggle = false;
+            
+        } else {
+
+            grid[myA][myB].highlight(true);
+            savedPA = myA; savedPB = myB;
+            savedPToggle = true;
+        }
+
+        drawGridLines();
+        drawAllPoints();
+    }
+};
+// ---------------------------------------------------------------------------
+// __________________________________________________________________________
+
+
+//  oooooooooooo                                       .   
+//  `888'     `8                                     .o8   
+//   888         oooo  oooo  ooo. .oo.    .ooooo.  .o888oo 
+//   888oooo8    `888  `888  `888P"Y88b  d88' `"Y8   888   
+//   888    "     888   888   888   888  888         888   
+//   888          888   888   888   888  888   .o8   888 . 
+//  o888o         `V88V"V8P' o888o o888o `Y8bod8P'   "888" 
+//                                                         
+//                                                         
+// 
+// __________________________________________________________________________
+
+
+
+var startupProcedure = function () {
+    // startupProcedure contains all of the basic initialization functions
+    // that will set up a fresh game.  This should be run at the beginning of
+    // every new game, including the very first game.
+    
+    // Reset the counter so that score doesn't crossover
+    // TODO:  Save scores so that it WILL cross over.
+    swapCounter = 0;
+
+
+    // Clear the ENTIRE canvas
+    fill(255,255,255); stroke(255,255,255);
+    rect(0,0,width,height);
+
+    // Reset Mouse select variables
+    savedPToggle = false;
+    savedPA = -1;  
+    savedPB = -1;
+
+    // Standard Initialization Procedure
+    initializePoints();
+    initializeScoreboard();
+    drawGridLines();
+    drawAllPoints();
+};
+
+// Run automatically the first time the page is loaded.
+startupProcedure();
+
+
+
+
+
+
+
+
+
+// ================================================
+
+
+}};
+
+    // Get the canvas that Processing-js will use
+    var canvas = document.getElementById("mycanvas"); 
+    // Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+
+</html>
+
+
