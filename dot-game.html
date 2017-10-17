@@ -6,13 +6,13 @@
 </head>
 <body>
     <p align="center"> 
-      <canvas id="mycanvas"></canvas> 
+      <canvas id="mycanvas" ></canvas> 
     </p>
 </body>
  
  <!-- Run all the JavaScript stuff -->
  <!-- Include the processing.js library -->
- <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ <script src="js/processing.min.js"></script> 
 
  <script>
 
@@ -28,16 +28,16 @@ var decideDimensions = function () {
     || document.body.clientHeight;
 
     if (width < height) {
-        return width;
+        return width * 0.95;
     } else {
-        return height;
+        return height * 0.95;
     }
 };
 
 var dimensionDecision = decideDimensions();
 
 var sketchProc = function(processingInstance) 
-{with (processingInstance) {size(dimensionDecision, dimensionDecision); frameRate(30);
+{with (processingInstance) {size(dimensionDecision, dimensionDecision); frameRate(60);
 
         
 
@@ -664,9 +664,8 @@ var checkForVictory = function() {
     victory = true;
     fill(255, 255, 255); stroke(255, 255, 255);
     rect(0,0,width,width/8);
-    fill(31, 194, 102); stroke(10, 10, 10); textSize(width/6);
-    text("You ", 10, width/8+1);
-    text("Win! ", 200, width/8+1);
+    fill(31, 194, 102); stroke(10, 10, 10); textSize(width/8);
+    text("You Win!", 10, width/8+1);
     fill(0,0,0); textSize(18);
     text('Click Anywhere to Restart.', 150, height-20);
 };
