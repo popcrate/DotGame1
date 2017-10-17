@@ -715,6 +715,21 @@ var getPointYouClicked = function (myMouseQ, factorQ, numberOfPointsQ) {
 };
 // ---------------------------------------------------------------------------
 
+var isString = function (value) {
+    return typeof value === 'string' || value instanceof String;
+};
+
+var checkCursorPointLocation = function () {
+    if (!isString(getPointYouClicked(mouseX, factorX, numberOfPointsX)) &&
+        !isString(getPointYouClicked(mouseY, factorY, numberOfPointsY))) {
+        return cursor(HAND);
+    } else { 
+        return cursor(CROSS);
+    }
+};
+
+// ---------------------------------------------------------------------------
+
 
 
 var savedPToggle = false;   // True if ANY point is Highlighted.
@@ -752,10 +767,13 @@ mouseClicked = function() {
 
                 //println(grid[savedPA][savedPB].color);
 
-                grid[savedPA][savedPB].swap(grid[myA][myB]);
-
+                if (grid[savedPA][savedPB].color !== grid[myA][myB].color) {
+                    grid[savedPA][savedPB].swap(grid[myA][myB]);
+                    swapCounter++;
+                }
+                
                 //println(grid[savedPA][savedPB].color);
-                swapCounter++;
+                
                 reDrawBoard();
                 checkForVictory();
             }
@@ -822,7 +840,16 @@ var startupProcedure = function () {
 startupProcedure();
 
 
+// ================================================
+// The continous DRAW FUNCTION
+// Occurs for every frame.
 
+
+
+
+var draw = function() {
+    checkCursorPointLocation();
+};
 
 
 
