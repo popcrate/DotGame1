@@ -4,18 +4,36 @@
     <title>Achenbach's Dot Path Game!</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 </head>
+
+<!-- CSS Stylings go here.-->
+<style>
+
+html {
+    height: 100%;
+    }
+body {
+    background: #657;
+    margin: 0 auto; 
+}
+canvas {box-shadow: 0 0em 2em 0.5em #204; }
+h1 {background: #756;}
+
+</style>
+
+
+<!-- What actually appears on the webpage -->
 <body>
-    <p align="center"> 
-      <canvas id="mycanvas" ></canvas> 
-    </p>
+    <p align="center"><canvas id="mycanvas"></canvas></p>
 </body>
+
+
  
  <!-- Run all the JavaScript stuff -->
  <!-- Include the processing.js library -->
  <script src="js/processing.min.js"></script> 
 
- <script>
 
+ <script>
 var decideDimensions = function () {
     // Returns a numeric value to be used both as canvas width and height
 
@@ -86,7 +104,7 @@ var numberOfPointsX = 5;
 var numberOfPointsY = 5;
 
 
-var dotRadius = (width + height) /  (numberOfPointsX + numberOfPointsY ) / 5 ;
+var dotRadius = (width + height) /  (numberOfPointsX + numberOfPointsY ) / 4 ;
 var factorX = width / (numberOfPointsX + 1);
 var factorY = height / (numberOfPointsY + 1);
 
@@ -108,9 +126,11 @@ if (factorX < factorY) {
 }
 
 
-// Draw Blank Area in case there are other weird things happening.
-fill(255,255,255); stroke(255,255,255);
-rect(0,0,width,height);
+
+
+
+// Animation counters go here
+highlightCounter = 0;
 
 
 
@@ -307,7 +327,7 @@ Point.prototype.highlight = function(choice) {
 
     if (choice === true) {
         noFill();
-        stroke(227, 221, 102);
+        stroke(0,0,0);
         strokeWeight(dotRadius - 1);
         ellipse(this.x, this.y, 2*dotRadius, 2*dotRadius);
     } 
@@ -316,7 +336,7 @@ Point.prototype.highlight = function(choice) {
         noFill();
         stroke(255, 255, 255);
         strokeWeight(dotRadius - 1);
-        ellipse(this.x, this.y, 2*dotRadius, 2*dotRadius);    
+        ellipse(this.x, this.y, 2*dotRadius + 1, 2*dotRadius + 1);    
     }
 };
 
@@ -666,8 +686,8 @@ var checkForVictory = function() {
     rect(0,0,width,width/8);
     fill(31, 194, 102); stroke(10, 10, 10); textSize(width/8);
     text("You Win!", 10, width/8+1);
-    fill(0,0,0); textSize(18);
-    text('Click Anywhere to Restart.', 150, height-20);
+    fill(0,0,0); textSize(regularFontSize);
+    text('Click Anywhere to Restart.', width/3, height - width/16);
 };
 
 
@@ -707,7 +727,7 @@ var getPointYouClicked = function (myMouseQ, factorQ, numberOfPointsQ) {
         return "_";
     }
     
-    if ((myMod < dotRadius) || (myMod > (factorQ - dotRadius))) {
+    if ((myMod < (factorQ * 0.4)) || (myMod > (factorQ * 0.6))) {
         return point;
     }
     
@@ -757,19 +777,31 @@ mouseClicked = function() {
         // println(savedPA + ',' + savedPB);
 
         if (savedPToggle === true) {
+            // This happens when you have a point selected already,
+            // and you click on a point.
         
             if (savedPA === myA && savedPB === myB) {
                 grid[myA][myB].highlight(false);
             } else {
-                // println('swapping.. ' + grid[savedPA][savedPB] + ' with ' + grid[myA][myB]);
+                // You've clicked on something other than the selected point.
+
+                // Deactivate the current selected point.
                 grid[savedPA][savedPB].highlight(false);
                 clearBoard();
 
-                //println(grid[savedPA][savedPB].color);
-
+                // Swap to the new point of a different color
                 if (grid[savedPA][savedPB].color !== grid[myA][myB].color) {
                     grid[savedPA][savedPB].swap(grid[myA][myB]);
                     swapCounter++;
+                } else {
+
+                    // Clicking on the same color switches the selector over
+                    // to that point, and does NOT count as a swap.
+                    grid[myA][myB].highlight(true);
+                    savedPA = myA; savedPB = myB;
+                    drawGridLines();
+                    drawAllPoints();
+                    return;
                 }
                 
                 //println(grid[savedPA][savedPB].color);
@@ -848,7 +880,12 @@ startupProcedure();
 
 
 var draw = function() {
+
     checkCursorPointLocation();
+
+    if (highlightCounter !== 0) {
+        highlightCounter--
+    }
 };
 
 
