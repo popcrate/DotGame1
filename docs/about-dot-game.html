@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="Chris Achenbach">
+  <meta name="dcterms.date" content="2017-10-16">
+  <title>Dot Path Game</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #303030; color: #cccccc; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; }
+td.sourceCode { padding-left: 5px; }
+pre, code { color: #cccccc; background-color: #303030; }
+code > span.kw { color: #f0dfaf; } /* Keyword */
+code > span.dt { color: #dfdfbf; } /* DataType */
+code > span.dv { color: #dcdccc; } /* DecVal */
+code > span.bn { color: #dca3a3; } /* BaseN */
+code > span.fl { color: #c0bed1; } /* Float */
+code > span.ch { color: #dca3a3; } /* Char */
+code > span.st { color: #cc9393; } /* String */
+code > span.co { color: #7f9f7f; } /* Comment */
+code > span.ot { color: #efef8f; } /* Other */
+code > span.al { color: #ffcfaf; } /* Alert */
+code > span.fu { color: #efef8f; } /* Function */
+code > span.er { color: #c3bf9f; } /* Error */
+code > span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+code > span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+code > span.sc { color: #dca3a3; } /* SpecialChar */
+code > span.vs { color: #cc9393; } /* VerbatimString */
+code > span.ss { color: #cc9393; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { } /* Variable */
+code > span.cf { color: #f0dfaf; } /* ControlFlow */
+code > span.op { color: #f0efd0; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+code > span.at { } /* Attribute */
+code > span.do { color: #7f9f7f; } /* Documentation */
+code > span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+code > span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+code > span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css" /><script type="text/javascript">window.onload = function(){var mathElements = document.getElementsByClassName("math");
+  for (var i=0; i < mathElements.length; i++)
+  {
+   var texText = mathElements[i].firstChild
+   katex.render(texText.data, mathElements[i])
+  }}
+  </script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">Dot Path Game</h1>
+<p class="author">Chris Achenbach</p>
+<p class="date">16 October 2017</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#dot-path-game">Dot Path Game</a><ul>
+<li><a href="#background">Background</a></li>
+<li><a href="#ideas-for-variations-in-gameplay">Ideas for Variations in Gameplay</a></li>
+</ul></li>
+<li><a href="#making-the-game-and-how-the-game-works">Making the Game and How the Game Works</a><ul>
+<li><a href="#adding-game-interaction">1. Adding Game Interaction</a></li>
+<li><a href="#rewriting-the-code-using-objects">2. Rewriting the Code Using Objects</a></li>
+<li><a href="#how-does-the-program-know-when-youve-won">3. How Does the Program Know When You’ve Won?</a></li>
+</ul></li>
+</ul>
+</nav>
+<!-- <script src="js/menu.js"></script> -->
+<p><link rel="stylesheet" href="nice.css"></p>
+<section id="dot-path-game" class="level1">
+<h1>Dot Path Game</h1>
+<table>
+<tbody>
+<tr class="odd">
+<td><a href="https://popcrate.github.io/DotGame1/dot-game.html">Link to the Dot Game on Github</a></td>
+</tr>
+<tr class="even">
+<td><a href="https://github.com/popcrate/DotGame1">Github Repo with Code and Stuff</a></td>
+</tr>
+</tbody>
+</table>
+<section id="background" class="level2">
+<h2>Background</h2>
+<p>I got the idea for this from <a href="https://cacm.acm.org/magazines/2017/10/221311-partitioned-peace/abstract">LAST BYTE: <em>Partitioned Peace</em> By Dennis Shasha</a> in the Communications of the Association for Computing Machinery (CACM) Vol. 60 No. 10</p>
+<p>The LAST BYTE is a section in the CACM, which sometimes presents a computer science problem (and sometimes several related problems). While working on a solution for this, I thought it might be fun to make it into a game! Since I’ve noticed the potential awesomeness of Internet browser games, I thought it might be fun to try using Javascript for this game.</p>
+<p>In some way, this whole “swapping” and “bridges” thing can represent partitioning data.</p>
+<p>I made this program using <a href="http://processingjs.org/">Processing.js</a>.</p>
+</section>
+<section id="ideas-for-variations-in-gameplay" class="level2">
+<h2>Ideas for Variations in Gameplay</h2>
+<ul>
+<li>Allow Swapping only to Adjacent Positions</li>
+<li>Randomize which bridges are available at the beginning</li>
+<li>Different layouts other than just a grid.</li>
+<li>Multiplayer!</li>
+<li>…</li>
+<li>…</li>
+<li>Do you have any ideas?</li>
+<li>…</li>
+</ul>
+<dl>
+<dt>Adding Diagonal Bridges</dt>
+<dd><p>There are default bridges between all points on the board. Every bridge in the <span class="math inline">x</span> and <span class="math inline">y</span> directions are considered “free”. Extra bridges can be drawn diagonally, connecting any point <span class="math inline">(x,y)</span> to any one of the four points <span class="math inline">(x\pm 1, y\pm 1)</span>. Similar to the “Swaps Added” counter, there will be a “Bridges Added” counter.</p>
+</dd>
+<dt>Scoring of Swapping and Changes Bridges</dt>
+<dd><p>When one red point, and one blue point, swap positions. This alters the colored connections on the board. Swapping would be generally more “expensive” than creating a bridge.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="making-the-game-and-how-the-game-works" class="level1">
+<h1>Making the Game and How the Game Works</h1>
+<section id="adding-game-interaction" class="level2">
+<h2>1. Adding Game Interaction</h2>
+<p>Adding click-able areas to the dots was more challenging and interesting than originally anticipated. Highlighting and removing highlights was also bit strange. The easiest solution was to draw blank rectangle in order to clear the screen, and then redraw the lines surrounding the highlighted point.</p>
+<p>My favorite activity was finding an algorithm to determine if the mouse was hovering over a point, and if so: determine which point. After scrapping a few potential models, I settled on using Modulo and Div functions.</p>
+<dl>
+<dt>Algorithm for Click Zones</dt>
+<dd><p>Suppose there is a Number Line starting from <span class="math inline">x=0</span> on the left side of the screen, heading toward <span class="math inline">x=W</span>, where <span class="math inline">W</span> is the width of the Canvas in pixels. The number line can also be written in interval form: <span class="math inline">x \in \left[ 0, W \right]</span></p>
+</dd>
+<dd><p>Let <span class="math inline">P</span> be a point on this number line, where <span class="math inline">P</span> is the center of a circle of radius <span class="math inline">R</span>. Since there be <span class="math inline">n</span> number of uniformly spaced points <span class="math inline">\left( P_1, P_2, \ldots, P_n \right)</span> on the number line. Let <span class="math inline">D</span> represent that distance spacing between points.</p>
+</dd>
+<dd><p>Because of the uniform spacing, the <span class="math inline">i^{th}</span> point’s position <span class="math inline">P_i = D \cdot i</span>. This means that you take the mouse’s position and divide it by the distance to find the nearest point on the left.</p>
+</dd>
+</dl>
+<figure>
+<img src="img/DotClickingExample.svg" alt="Example of how to determine if a dot was click on, and which one it was. Notice how A \cdot \left( A \text{ div } B \right) results in the distance to the clicked point." /><figcaption>Example of how to determine if a dot was click on, and which one it was. Notice how <span class="math inline">A \cdot \left( A \text{ div } B \right)</span> results in the distance to the clicked point.</figcaption>
+</figure>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">var</span> getPointYouClicked <span class="op">=</span> <span class="kw">function</span> (myMouseQ<span class="op">,</span> factorQ<span class="op">,</span> numberOfPointsQ) <span class="op">{</span>
+    <span class="kw">var</span> point<span class="op">;</span>
+    <span class="kw">var</span> myDiv <span class="op">=</span> (myMouseQ<span class="op">-</span>(myMouseQ<span class="op">%</span>factorQ))/factorQ<span class="op">;</span>
+    <span class="kw">var</span> myMod <span class="op">=</span> (myMouseQ) <span class="op">%</span> factorQ<span class="op">;</span>
+    
+    <span class="cf">if</span> (myMod <span class="op">&lt;=</span> ((factorQ) / <span class="dv">2</span>)) <span class="op">{</span>
+        point <span class="op">=</span> myDiv<span class="op">;</span>
+    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+        point <span class="op">=</span> myDiv <span class="op">+</span> <span class="dv">1</span><span class="op">;</span>
+    <span class="op">}</span>
+    <span class="cf">if</span> ((point <span class="op">&lt;</span> <span class="dv">1</span>) <span class="op">||</span> (point <span class="op">&gt;</span> numberOfPointsQ)) <span class="op">{</span>
+        <span class="cf">return</span> <span class="st">&quot;_&quot;</span><span class="op">;</span>
+    <span class="op">}</span>
+    <span class="cf">if</span> ((myMod <span class="op">&lt;</span> dotRadius) <span class="op">||</span> (myMod <span class="op">&gt;</span> (factorQ <span class="op">-</span> dotRadius))) <span class="op">{</span>
+        <span class="cf">return</span> point<span class="op">;</span>
+    <span class="op">}</span>
+    <span class="cf">return</span> <span class="st">&quot;_&quot;</span><span class="op">;</span>
+<span class="op">};</span></code></pre></td></tr></table></div>
+</section>
+<section id="rewriting-the-code-using-objects" class="level2">
+<h2>2. Rewriting the Code Using Objects</h2>
+<p>After successfully drawing the grid of dots and adding clicking, highlighting, and point switching features, I wanted to make a functional game. Most importantly, this involves a “You Win!” screen (this game specifically would be dull without a way to win). I worked out the algorithm to check for a completed game, written on paper (or in this case, dry-erase board).</p>
+<p>My solution involved Set Theory and frequent usage of points on the grid. I realized that it would be easier to just start over from scratch. So I re-built the program, focusing on abstract objects instead of quickly drawing things on the screen. I removed myself from the automatic-compile-and-render environment graciously hosted on Khan Academy, and started working on my code in an editor (Sublime Text).</p>
+<p>I began with the idea that there should be 3 custom objects (other than Integers, Strings, etc.) involved in the program.</p>
+<dl>
+<dt>Set Object</dt>
+<dd><p>The <strong>Set</strong> Object is basically just a traditional set. It only differs from an Array in the fact that each element is unique. The <code>add(element)</code> function shows how new elements are checked for uniqueness before being added.</p>
+</dd>
+</dl>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">var</span> mySet <span class="op">=</span> <span class="kw">function</span> () <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">elements</span> <span class="op">=</span> []<span class="op">;</span>
+<span class="op">};</span>
+<span class="va">mySet</span>.<span class="va">prototype</span>.<span class="at">add</span> <span class="op">=</span> <span class="kw">function</span> (newElement) <span class="op">{</span>
+    <span class="cf">if</span> (<span class="kw">this</span>.<span class="va">elements</span>.<span class="at">includes</span>(newElement)) <span class="op">{</span>
+        <span class="cf">return</span> <span class="kw">this</span>.<span class="at">items</span><span class="op">;</span>
+    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span>
+        <span class="cf">return</span> <span class="kw">this</span>.<span class="va">elements</span>.<span class="at">push</span>(newElement)<span class="op">;</span>
+    <span class="op">}</span>
+<span class="op">};</span></code></pre></td></tr></table></div>
+<dl>
+<dt>Point Object</dt>
+<dd><p>The <strong>Point</strong> object represents one of the dots on the grid. At the start of a game, a two-dimensional matrix <code>grid[A][B]</code> is loaded with Point Objects corresponding horizontal and vertical dimensions. I thought that it would be important to specify that the index of points: <span class="math inline">[A][B]</span> be distinct from pixels locations to draw: <span class="math inline">(x,y)</span>. Finally, adding the property <code>color</code> would be incredible useful to work with later on.</p>
+</dd>
+</dl>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">var</span> Point <span class="op">=</span> <span class="kw">function</span> (A<span class="op">,</span> B) <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">A</span> <span class="op">=</span> A<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">B</span> <span class="op">=</span> B<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">x</span> <span class="op">=</span> <span class="kw">this</span>.<span class="at">A</span> <span class="op">*</span> factorX<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">y</span> <span class="op">=</span> <span class="kw">this</span>.<span class="at">B</span> <span class="op">*</span> factorY<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">color</span> <span class="op">=</span> <span class="st">&#39;&#39;</span><span class="op">;</span>
+<span class="op">};</span></code></pre></td></tr></table></div>
+<dl>
+<dt>Chain Object</dt>
+<dd><p>Now here is the special <strong>Chain</strong> object. A chain is a <em>Set</em> of <em>Points</em> which share the same color, and are connected together. It can also be thought of as a graph from graph theory, where each point is a vertex, and each Adjacent Point is a vertex pointer. The <em>Known Links</em> are confirmed to be part of the chain, and will contain the final results to check for a winning game.</p>
+</dd>
+</dl>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">var</span> Chain <span class="op">=</span> <span class="kw">function</span> (chainColor) <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">knownLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">discoveredLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">nextToCheck</span> <span class="op">=</span> []<span class="op">;</span>
+    <span class="kw">this</span>.<span class="at">chainColor</span> <span class="op">=</span> chainColor<span class="op">;</span>
+<span class="op">};</span></code></pre></td></tr></table></div>
+</section>
+<section id="how-does-the-program-know-when-youve-won" class="level2">
+<h2>3. How Does the Program Know When You’ve Won?</h2>
+<figure>
+<img src="img/dotGame-example1.png" alt="This is an example of a randomly-generated 5 \times 5 grid of colored Points. As most humans can plainly see, certain dots are linked together, and others are clearly by themselves. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?" /><figcaption>This is an example of a randomly-generated <span class="math inline">5 \times 5</span> grid of colored Points. As most humans can plainly see, certain dots are linked together, and others are clearly by themselves. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?</figcaption>
+</figure>
+<p>It can help to think of this problem in terms of a <strong>Towns</strong> and <strong>Roads</strong>. Let’s start at an arbitrary <b style="color:red">Red</b> Point, such as <span class="math inline">(5, 4)</span>. Now, imagine you are standing on that point, looking at the different roads you can take. Fortunately, you have road signs telling you where you can go! So Let’s go through the possibilities, and consider our options.</p>
+<figure>
+<img src="img/dotGame-example3.png" alt="From this Point there are 3 Adjacent Points, which are all possibly connected, but not necessarily the same color. The Set of Adjacent Points = \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace." /><figcaption>From this Point there are <strong>3 Adjacent Points</strong>, which are all possibly connected, but not necessarily the same color. The <strong>Set</strong> of Adjacent Points <span class="math inline">= \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace</span>.</figcaption>
+</figure>
+<p>Since we are currently looking for points of the same color, the new Link that we “discovered” is Point <span class="math inline">(5, 3)</span>. This is going to be the next point we look at for more connected links!</p>
+<pre><code>===================
+RED CHAIN
+-------------------
+checking... (5,4)
+New Link Discovered! (5, 3)
+checking... (5,3)
+Links in Red chain = (5, 3),(5, 4)</code></pre>
+<hr />
+<p>Now, check out the <b style="color:blue">Blue</b> Chain:</p>
+<p>From the same grid layout above, here is what the program looks like as it searches for a <b style="color:blue">Blue</b> Chain. Notice that there are many red points we check, but never actually visit and add to our set. While you look at the path, imagine you are collecting each of the blue points you visit in your <strong>Set</strong>. Starting off with Links <span class="math inline">= \big\lbrace (5, 5)\big\rbrace</span> .</p>
+<pre><code>===================
+Blue CHAIN
+-------------------
+checking... (5,5)
+New Link Discovered! (4, 5)
+checking... (4,5)
+New Link Discovered! (3, 5)
+New Link Discovered! (4, 4)
+checking... (4,4)
+New Link Discovered! (4, 3)
+checking... (4,3)
+New Link Discovered! (3, 3)
+New Link Discovered! (4, 2)
+checking... (4,2)
+New Link Discovered! (5, 2)
+New Link Discovered! (4, 1)
+checking... (4,1)
+checking... (5,2)
+checking... (3,3)
+checking... (3,5)
+New Link Discovered! (2, 5)
+checking... (2,5)
+Links in Blue chain = (2, 5),(5, 2),(4, 1),(3, 3),(4, 2),(4, 3),(3, 5),(4, 4),(4, 5),(5, 5)</code></pre>
+<figure>
+<img src="img/dotGame-example4.PNG" alt="Moving from Start to Finish, notice the number written on the picture is equivalent to the depth of a graph, a common data structure. In this case, we don’t actually save the depth, but the element itself, and place that point into our Set of numbers." /><figcaption>Moving from <em>Start</em> to <em>Finish</em>, notice the number written on the picture is equivalent to the depth of a graph, a common data structure. In this case, we don’t actually save the depth, but the element itself, and place that point into our Set of numbers.</figcaption>
+</figure>
+<p>As we discover each link, how do we prevent ourselves from backtracking? Specifically, how do make sure that once you hit the <em>Last Point</em>, the computer doesn’t just look backwards again and say “Hey, look, there’s another blue point, let’s go!”.</p>
+<p>Whenever a new link is discovered (of the same color), you can check to see if it’s already in the Set of Points that you already know about. If you’ve never seen that point before, you can add it to the list you will Check Next. This is why it is useful to have the various types of properties attached to the Chain object:</p>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">this</span>.<span class="at">knownLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+<span class="kw">this</span>.<span class="at">discoveredLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+<span class="kw">this</span>.<span class="at">nextToCheck</span> <span class="op">=</span> []<span class="op">;</span></code></pre></td></tr></table></div>
+<!--
+
+    ## Bonus:  ASCII Comment Titles
+
+    Thanks for the ASCII text generator!  <http://patorjk.com/software/taag/>
+
+
+    ![Fun with ASCII Text to create titles for various blocks of code.  Makes navigation easier (for me, at least). ](img/comment-titles.PNG)
+
+
+    ![Main Window and Side Navigator Bar in Sublime Text Editor 3.](img/comment-titles-point.PNG)
+
+
+    I used the "Roman" font style of ASCII text found at: <http://patorjk.com/software/taag/#p=display&c=c%2B%2B&f=Roman&t=Hello.>
+
+    # Code of the Dot Path Game!
+
+    See the [Old *Path Dot Game* code!](old-path-dot-game.html)
+
+-->
+</section>
+</section>
+</body>
+</html>
