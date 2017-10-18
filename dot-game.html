@@ -24,6 +24,7 @@ h1 {background: #756;}
 <!-- What actually appears on the webpage -->
 <body>
     <p align="center"><canvas id="mycanvas"></canvas></p>
+    <p id = "somethingNeat"> </p>
 </body>
 
 
@@ -33,7 +34,9 @@ h1 {background: #756;}
  <script src="js/processing.min.js"></script> 
 
 
- <script>
+<script>
+
+
 var decideDimensions = function () {
     // Returns a numeric value to be used both as canvas width and height
 
@@ -50,12 +53,21 @@ var decideDimensions = function () {
     } else {
         return height * 0.95;
     }
-};
 
+};
+// used to maintain 1:1 ratio of height and width.
 var dimensionDecision = decideDimensions();
 
-var sketchProc = function(processingInstance) 
-{with (processingInstance) {size(dimensionDecision, dimensionDecision); frameRate(60);
+
+// make typing easier
+
+
+
+
+
+
+var sketchProc = function(processingInstance) {with (processingInstance) 
+    {size(dimensionDecision, dimensionDecision); frameRate(60);
 
         
 
@@ -100,13 +112,14 @@ var sketchProc = function(processingInstance)
 //    Global Variables
 // ------------------------------------------------------------
 
-var numberOfPointsX = 5;
-var numberOfPointsY = 5;
+// Initializes some basic number variables.
+var numberOfPointsX = 8;
+var numberOfPointsY = 8;
+var dotRadius;
+var factorX;
+var factorY;
+var regularFontSize;
 
-
-var dotRadius = (width + height) /  (numberOfPointsX + numberOfPointsY ) / 4 ;
-var factorX = width / (numberOfPointsX + 1);
-var factorY = height / (numberOfPointsY + 1);
 
 // Initializes a 2-dimensional Array[][] which will hold Point objects.
 var grid = new Array(numberOfPointsX);
@@ -117,20 +130,32 @@ for (var i = grid.length - 1; i >= 0; i--) {
 // swap counter is displayed on the front screen, kind of like a score.
 var swapCounter = 0;
 
-// Determining a good Font Size based on the dimensions of canvas.
-var regularFontSize;
-if (factorX < factorY) {
-    regularFontSize = factorX / 4;
-} else {
-    regularFontSize = factorY / 4;
-}
+
+var defineGlobalVars = function() {
+    // defineGlobalVars assigns values to previously assigned global variables
+    // these vars control a majority of things on the canvas.
+    var saveHeight = height;
+
+    dotRadius = (width + height) /  (numberOfPointsX + numberOfPointsY ) / 3 ;
+    factorX = width / (numberOfPointsX + 1);
+    factorY = height / (numberOfPointsY + 1);
+
+
+    // Determining a good Font Size based on the dimensions of canvas.
+    if (factorX < factorY) {
+        regularFontSize = factorX / 4;
+    } else {
+        regularFontSize = factorY / 4;
+    }
+};
+
+
+// On the first run, the global variables are defined.
+// The function can be called again later in case an update needs to happen.
+defineGlobalVars();
 
 
 
-
-
-// Animation counters go here
-highlightCounter = 0;
 
 
 
@@ -341,6 +366,10 @@ Point.prototype.highlight = function(choice) {
 };
 
 
+Point.prototype.updateXYLocation = function() {
+    this.x = this.A * factorX;
+    this.y = this.B * factorY;
+};
 
 
 Point.prototype.convertToValue = function() {
@@ -528,9 +557,13 @@ var initializePoints = function () {
     }
 };
 
-
-for (var i = numberOfPointsX - 1; i >= 0; i--) {
-}
+var updateAllPointLocations = function () {
+    for (var i = 0; i < numberOfPointsX; i++) {
+        for (var j = 0; j < numberOfPointsX; j++) {
+            grid[i][j].updateXYLocation();
+        }
+    }
+};
 
 // Draw the "Scoreboard".  This only needs to happen ONCE.
 var initializeScoreboard = function () {
@@ -609,7 +642,10 @@ var drawGridLines = function() {
 };
 
 
-
+var clearCanvas = function() {
+    fill(255,255,255); stroke(255,255,255);
+    rect(0,0,width,height);
+};
 
 
 
@@ -652,11 +688,12 @@ var buildAllChains = function () {
 
 var findAllPointsOfColor = function(myColor) {
     // Looks through the whole grid and finds all points of choosen color.
+    // @param myColor is the choosen color we want to check.
     // returns ARRAY
 
     var stuff = new mySet();
-    for (var i = 0; i < numberOfPointsX; i++) {
-        for (var j = 0; j < numberOfPointsX; j++) {
+    for (var i = grid.length - 1; i >= 0; i--) {
+        for (var j = grid[i].length - 1; j >= 0; j--) {
             if (myColor === grid[i][j].color) {
                 stuff.add( gimmePointValue(i + 1, j + 1) );
             }
@@ -665,23 +702,33 @@ var findAllPointsOfColor = function(myColor) {
     return stuff;
 };
 
-var victory = false;
-var checkForVictory = function() {
+
+var areAllChainsCompleted = function(AllReds, AllBlues) {
+    //areAllChainsCompleted() returns true if all same-color points are linked
+
     var AllReds = findAllPointsOfColor('RED');
     var RedChain = new Chain('RED');
     RedChain.formChain();
-    // println(RedChain.knownLinks.elements);
-    // println(AllReds.elements);
+  
+    // if the Red chain doesn't have every red point, then stop here.  
+    // There's no need to check blue.  We know the game isn't finished yet. 
+    if (!RedChain.knownLinks.equals(AllReds)) { return false; }
 
-    if (!RedChain.knownLinks.equals(AllReds)) {return;}
+    // We know the red points are linked together; what about blue ones?     
     
     var AllBlues = findAllPointsOfColor('BLUE');
     var BlueChain = new Chain('BLUE');
     BlueChain.formChain();
+    if (!BlueChain.knownLinks.equals(AllBlues)) { return false; }
 
-    if (!BlueChain.knownLinks.equals(AllBlues)) {return;}
+    // If you've managed to make it this far, you win!
+    return true;
+};
 
-    victory = true;
+
+var victoryDance = function () {
+    // Sequence of events that occurrs when a game is completed.
+    
     fill(255, 255, 255); stroke(255, 255, 255);
     rect(0,0,width,width/8);
     fill(31, 194, 102); stroke(10, 10, 10); textSize(width/8);
@@ -690,6 +737,17 @@ var checkForVictory = function() {
     text('Click Anywhere to Restart.', width/3, height - width/16);
 };
 
+
+
+var victory;
+var checkForVictory = function() {
+    // checkForVictory calls upon external definitions of victory.
+    // if the game is victorious, then do a victory Dance!
+
+    victory = areAllChainsCompleted();
+    if (victory) { victoryDance(); }
+    return victory;
+};
 
 
 
@@ -727,7 +785,7 @@ var getPointYouClicked = function (myMouseQ, factorQ, numberOfPointsQ) {
         return "_";
     }
     
-    if ((myMod < (factorQ * 0.4)) || (myMod > (factorQ * 0.6))) {
+    if ((myMod < (factorQ * 0.45)) || (myMod > (factorQ * 0.55))) {
         return point;
     }
     
@@ -805,7 +863,6 @@ mouseClicked = function() {
                 }
                 
                 //println(grid[savedPA][savedPB].color);
-                
                 reDrawBoard();
                 checkForVictory();
             }
@@ -819,6 +876,7 @@ mouseClicked = function() {
             savedPA = myA; savedPB = myB;
             savedPToggle = true;
         }
+
 
         drawGridLines();
         drawAllPoints();
@@ -853,8 +911,7 @@ var startupProcedure = function () {
 
 
     // Clear the ENTIRE canvas
-    fill(255,255,255); stroke(255,255,255);
-    rect(0,0,width,height);
+    clearCanvas();
 
     // Reset Mouse select variables
     savedPToggle = false;
@@ -867,42 +924,79 @@ var startupProcedure = function () {
     drawGridLines();
     drawAllPoints();
 };
-
 // Run automatically the first time the page is loaded.
 startupProcedure();
 
+
+function redrawEvent() {
+    defineGlobalVars();
+    updateAllPointLocations();
+    clearCanvas();
+    drawGridLines();
+    drawAllPoints();
+};
+
+function test() {
+    fill( 155, 155, 255);
+    rect(0,0,120,120);
+} ;     
 
 // ================================================
 // The continous DRAW FUNCTION
 // Occurs for every frame.
 
-
-
-
 var draw = function() {
 
     checkCursorPointLocation();
-
-    if (highlightCounter !== 0) {
-        highlightCounter--
-    }
 };
-
-
-
-
 
 
 // ================================================
 
 
+
+
+
+
+
+
+
+
 }};
 
-    // Get the canvas that Processing-js will use
-    var canvas = document.getElementById("mycanvas"); 
-    // Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
-    var processingInstance = new Processing(canvas, sketchProc); 
+// Get the canvas that Processing-js will use
+var canvas = document.getElementById("mycanvas"); 
+// Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+var processingInstance = new Processing(canvas, sketchProc); 
+
+
+
+
+// window.onresize = function () {
+//     // Wheenver the screen is resized, 
+//     // tell the program to update its variables.
+
+//     dimensionDecision = decideDimensions();
+
+//     // both of these are equivalent.
+//     var pjs = Processing.getInstanceById("mycanvas");
+//     var pjs = processingInstance
+
+//     pjs.size(dimensionDecision, dimensionDecision);
+//     pjs.fill(255,255,255);
+//     pjs.rect(0,0,dimensionDecision,dimensionDecision);
+
+//     pjs.test();
+//     pjs.redrawEvent();
+//     pjs.drawAllPoints();
+// };
+
+
+
+
  </script>
+
+
 
 </html>
 

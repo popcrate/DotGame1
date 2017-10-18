@@ -11,11 +11,6 @@ body {
     line-height: 1.5;
     box-shadow: 0 0em 2em 0.5em #777;
     margin-top: 2.5em;
-    /*
-    position:fixed;
-    left: 50%;
-    transform: translate(-50%, 0);
-    */
 }
 
 header {
@@ -56,7 +51,7 @@ nav ul ul a {padding: 0 0em;}
 nav ul ul ul {display: none;}
 a{display: inline-block; color: #11F; text-decoration: none} 
 a:focus, a:hover { background: palegreen; text-decoration: underline}
-dl {margin: auto auto auto 10%;}
+dl {margin: auto 5%;}
 dt {background: #EEF;}
 dd { 
     /* background-color: #F55F5F8; */
@@ -72,8 +67,8 @@ table:not(.sourceCode), tr:not(.sourceCode), td:not(.sourceCode) {
     border: solid thin #000;
 }
 p {
-    padding-left: 1em;
-    padding-right: 1em;
+    padding-left: 1%;
+    padding-right: 1%;
 }
 progress {
     width: 90%;
@@ -128,7 +123,7 @@ option {
 }
 figure { 
     max-width: 40em;
-    margin: 0 auto;
+    margin: auto auto;
     background: #F5F5F8;
     border: solid thin #AAA;
     /* box-shadow:  0em 5px 1em 1px #AAA; */ 
@@ -157,13 +152,14 @@ table[class="sourceCode javascript numberLines"] {
     border: solid thin #AAA;
     /* box-shadow:  0em 0.5em 1em 1px #555; */ 
 }
-code {
+code:not(.sourceCode) {
     border-radius: 0.3em;
     padding: 0.3em;
 }
-pre code {border-radius: 0; padding: 0;}
+pre code {
+    border-radius: 0; padding: 0;
+}
 pre {
-    max-width: 81ch;
     padding: 1%;
     margin: 1em auto;
     overflow-x: auto;
@@ -186,5 +182,16 @@ td.sourceCode pre {
     padding: 0;
     border: unset;
     box-shadow: unset;
+    overflow-y: hidden;
     margin: 0;
 }
+
+.footnoteRef {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    /* border: dotted thin; */
+}
+.footnoteRef sup:after{content:"]"}
+.footnoteRef sup:before{content:"["}
+
+section.footnotes hr:before{content:"Footnote Citations"}

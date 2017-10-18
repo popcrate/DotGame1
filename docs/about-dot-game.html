@@ -92,10 +92,10 @@ code > span.in { color: #7f9f7f; font-weight: bold; } /* Information */
 </table>
 <section id="background" class="level2">
 <h2>Background</h2>
-<p>I got the idea for this from <a href="https://cacm.acm.org/magazines/2017/10/221311-partitioned-peace/abstract">LAST BYTE: <em>Partitioned Peace</em> By Dennis Shasha</a> in the Communications of the Association for Computing Machinery (CACM) Vol. 60 No. 10</p>
+<p>I got the idea for this from <a href="https://cacm.acm.org/magazines/2017/10/221311-partitioned-peace/abstract">LAST BYTE: <em>Partitioned Peace</em> By Dennis Shasha</a> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> in the Communications of the Association for Computing Machinery (CACM) Vol. 60 No. 10</p>
 <p>The LAST BYTE is a section in the CACM, which sometimes presents a computer science problem (and sometimes several related problems). While working on a solution for this, I thought it might be fun to make it into a game! Since I’ve noticed the potential awesomeness of Internet browser games, I thought it might be fun to try using Javascript for this game.</p>
 <p>In some way, this whole “swapping” and “bridges” thing can represent partitioning data.</p>
-<p>I made this program using <a href="http://processingjs.org/">Processing.js</a>.</p>
+<p>I made this program using <a href="http://processingjs.org/">Processing.js</a>. See <a href="https://processingfoundation.org/">Processing Foundation</a></p>
 </section>
 <section id="ideas-for-variations-in-gameplay" class="level2">
 <h2>Ideas for Variations in Gameplay</h2>
@@ -204,6 +204,7 @@ code > span.in { color: #7f9f7f; font-weight: bold; } /* Information */
         <span class="cf">return</span> <span class="kw">this</span>.<span class="va">elements</span>.<span class="at">push</span>(newElement)<span class="op">;</span>
     <span class="op">}</span>
 <span class="op">};</span></code></pre></td></tr></table></div>
+<p>Notice how if <code>this.elements</code> already includes the <code>newElement</code>, then the <code>add()</code> function simply returns the original list of elements. Basically, my Set object is nothing more than an Array with some special functions.</p>
 <dl>
 <dt>Point Object</dt>
 <dd><p>The <strong>Point</strong> object represents one of the dots on the grid. At the start of a game, a two-dimensional matrix <code>grid[A][B]</code> is loaded with Point Objects corresponding horizontal and vertical dimensions. I thought that it would be important to specify that the index of points: <span class="math inline">[A][B]</span> be distinct from pixels locations to draw: <span class="math inline">(x,y)</span>. Finally, adding the property <code>color</code> would be incredible useful to work with later on.</p>
@@ -244,13 +245,84 @@ code > span.in { color: #7f9f7f; font-weight: bold; } /* Information */
 <section id="how-does-the-program-know-when-youve-won" class="level2">
 <h2>3. How Does the Program Know When You’ve Won?</h2>
 <figure>
-<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example1.PNG" alt="This is an example of a randomly-generated 5 \times 5 grid of colored Points. As most humans can plainly see, certain dots are linked together, and others are clearly by themselves. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?" /><figcaption>This is an example of a randomly-generated <span class="math inline">5 \times 5</span> grid of colored Points. As most humans can plainly see, certain dots are linked together, and others are clearly by themselves. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?</figcaption>
+<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example1.png" alt="This is an example of a randomly-generated 5 \times 5 grid of colored Points. Humans can easily tell which dots are linked together, and which are not. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?" /><figcaption>This is an example of a randomly-generated <span class="math inline">5 \times 5</span> grid of colored Points. Humans can easily tell which dots are linked together, and which are not. Visually, we can spot this pattern quite easily. But, How can a computer find out which points are linked?</figcaption>
 </figure>
-<p>It can help to think of this problem in terms of a <strong>Towns</strong> and <strong>Roads</strong>. Let’s start at an arbitrary <b style="color:red">Red</b> Point, such as <span class="math inline">(5, 4)</span>. Now, imagine you are standing on that point, looking at the different roads you can take. Fortunately, you have road signs telling you where you can go! So Let’s go through the possibilities, and consider our options.</p>
+<p>Since there are unlinked points, the game is not completed yet, but we need to convince the computer. To do this, we want to show that every red point is linked together <em>and</em> every blue point is linked together.</p>
+<p>Originally, I thought of simply checking every point to see if it’s linked to another point. However, this doesn’t work in the cases where there are multiple same-color chains that are disconnected from each other.</p>
+<p>So, here’s another approach. First, find the set of all Red Points, and the set of all Blue points. Next, find a random red point, and find the chain of the points linked to it. In a completed game, the points in that chain will have every point that exists! Other methods exist, but this method will be deterministic, so it will be used for now.</p>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">var</span> checkForVictory <span class="op">=</span> <span class="kw">function</span>() <span class="op">{</span>
+    <span class="co">//checkForVictory() returns true if all same-color points are linked</span>
+
+    <span class="kw">var</span> AllReds <span class="op">=</span> <span class="at">findAllPointsOfColor</span>(<span class="st">&#39;RED&#39;</span>)<span class="op">;</span>
+    <span class="kw">var</span> RedChain <span class="op">=</span> <span class="kw">new</span> <span class="at">Chain</span>(<span class="st">&#39;RED&#39;</span>)<span class="op">;</span>
+    <span class="va">RedChain</span>.<span class="at">formChain</span>()<span class="op">;</span>
+
+    
+    <span class="co">// if the Red chain doesn&#39;t have every red point, then stop here.  </span>
+    <span class="co">// There&#39;s no need to check blue.  We know the game isn&#39;t finished yet.</span>
+
+    <span class="cf">if</span> (<span class="op">!</span><span class="va">RedChain</span>.<span class="va">knownLinks</span>.<span class="at">equals</span>(AllReds)) <span class="op">{</span> <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span> <span class="op">}</span>
+
+    
+    <span class="co">// We know the red points are linked together; what about the blue ones?</span>
+
+    <span class="kw">var</span> AllBlues <span class="op">=</span> <span class="at">findAllPointsOfColor</span>(<span class="st">&#39;BLUE&#39;</span>)<span class="op">;</span>
+    <span class="kw">var</span> BlueChain <span class="op">=</span> <span class="kw">new</span> <span class="at">Chain</span>(<span class="st">&#39;BLUE&#39;</span>)<span class="op">;</span>
+    <span class="va">BlueChain</span>.<span class="at">formChain</span>()<span class="op">;</span>
+
+    <span class="cf">if</span> (<span class="op">!</span><span class="va">BlueChain</span>.<span class="va">knownLinks</span>.<span class="at">equals</span>(AllBlues)) <span class="op">{</span> <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span> <span class="op">}</span>
+
+    <span class="co">// If you&#39;ve managed to make it this far, you win!</span>
+    <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span>
+<span class="op">}</span></code></pre></td></tr></table></div>
+<p>Let’s start at a <b style="color:red">Red</b> Point, such as <span class="math inline">(5, 4)</span>. Now, imagine you are standing on that point, looking at the different roads you can take. Fortunately, you have road signs telling you where you can go! So Let’s go through the possibilities, and consider our options.</p>
 <figure>
-<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example3.PNG" alt="From this Point there are 3 Adjacent Points, which are all possibly connected, but not necessarily the same color. The Set of Adjacent Points = \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace." /><figcaption>From this Point there are <strong>3 Adjacent Points</strong>, which are all possibly connected, but not necessarily the same color. The <strong>Set</strong> of Adjacent Points <span class="math inline">= \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace</span>.</figcaption>
+<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example3.png" alt="From this Point there are 3 Adjacent Points, which are all possibly connected, but not necessarily the same color. The Set of Adjacent Points = \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace." /><figcaption>From this Point there are <strong>3 Adjacent Points</strong>, which are all possibly connected, but not necessarily the same color. The <strong>Set</strong> of Adjacent Points <span class="math inline">= \big\lbrace (4, 4), (5,3), (5,5) \big\rbrace</span>.</figcaption>
 </figure>
 <p>Since we are currently looking for points of the same color, the new Link that we “discovered” is Point <span class="math inline">(5, 3)</span>. This is going to be the next point we look at for more connected links!</p>
+<p>This is where the <strong>Chain</strong> object will be helpful to keep track of what points we are looking at, and what we already know about.</p>
+<dl>
+<dt>Known Links</dt>
+<dd>is the set of all points we have <em>confirmed</em> are in the chain. At the beginning of the algorithm, this will only contain the first point. In our example, <span class="math inline">\mathtt{Known Links} = \big\lbrace (5, 4) \big\rbrace</span>
+</dd>
+<dt>Discovered Links</dt>
+<dd>is the set of all points we have just <em>discovered</em>. Usually these are the adjacent points of the same color.
+</dd>
+<dt>Next to Check</dt>
+<dd>is a simple array of points that are “next in line” to check. The ordering of the points is actually non-essential to our algorithm. What is important, is that the only items placed in this array are elements that have <em>Not</em> been visited before.
+</dd>
+</dl>
+<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">this</span>.<span class="at">knownLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+<span class="kw">this</span>.<span class="at">discoveredLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
+<span class="kw">this</span>.<span class="at">nextToCheck</span> <span class="op">=</span> []<span class="op">;</span></code></pre></td></tr></table></div>
 <pre><code>===================
 RED CHAIN
 -------------------
@@ -285,16 +357,10 @@ New Link Discovered! (2, 5)
 checking... (2,5)
 Links in Blue chain = (2, 5),(5, 2),(4, 1),(3, 3),(4, 2),(4, 3),(3, 5),(4, 4),(4, 5),(5, 5)</code></pre>
 <figure>
-<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example4.PNG" alt="Moving from Start to Finish, notice the number written on the picture is equivalent to the depth of a graph, a common data structure. In this case, we don’t actually save the depth, but the element itself, and place that point into our Set of numbers." /><figcaption>Moving from <em>Start</em> to <em>Finish</em>, notice the number written on the picture is equivalent to the depth of a graph, a common data structure. In this case, we don’t actually save the depth, but the element itself, and place that point into our Set of numbers.</figcaption>
+<img src="https://popcrate.github.io/DotGame1/docs/img/dotGame-example4.PNG" alt="Finding the chain of Blue points by checking adjacent points, Moving from Start at (5,5) to the End at (4,1)." /><figcaption>Finding the chain of <b style="color:blue">Blue</b> points by checking adjacent points, Moving from <em>Start</em> at <span class="math inline">(5,5)</span> to the <em>End</em> at <span class="math inline">(4,1)</span>.</figcaption>
 </figure>
 <p>As we discover each link, how do we prevent ourselves from backtracking? Specifically, how do make sure that once you hit the <em>Last Point</em>, the computer doesn’t just look backwards again and say “Hey, look, there’s another blue point, let’s go!”.</p>
-<p>Whenever a new link is discovered (of the same color), you can check to see if it’s already in the Set of Points that you already know about. If you’ve never seen that point before, you can add it to the list you will Check Next. This is why it is useful to have the various types of properties attached to the Chain object:</p>
-<div class="sourceCode"><table class="sourceCode javascript numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-</pre></td><td class="sourceCode"><pre><code class="sourceCode javascript"><span class="kw">this</span>.<span class="at">knownLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
-<span class="kw">this</span>.<span class="at">discoveredLinks</span> <span class="op">=</span> <span class="kw">new</span> <span class="at">mySet</span>()<span class="op">;</span>
-<span class="kw">this</span>.<span class="at">nextToCheck</span> <span class="op">=</span> []<span class="op">;</span></code></pre></td></tr></table></div>
+<p>Whenever a new link is discovered (of the same color), you can check to see if it’s already in the Set of Points that you already know about. If you’ve never seen that point before, you can add it to the list you will Check Next. This is why it is useful to have the various types of properties attached to the Chain object.</p>
 <!--
 
     ## Bonus:  ASCII Comment Titles
@@ -316,6 +382,12 @@ Links in Blue chain = (2, 5),(5, 2),(4, 1),(3, 3),(4, 2),(4, 3),(3, 5),(4, 4),(4
 
 -->
 </section>
+</section>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Dennis Shasha. 2017. Partitioned peace. <em>Commun</em>. ACM 60, 10 (September 2017), 112-ff. DOI: <a href="https://doi.org/10.1145/3133244" class="uri">https://doi.org/10.1145/3133244</a><a href="#fnref1">↩</a></p></li>
+</ol>
 </section>
 </body>
 </html>
