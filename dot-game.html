@@ -389,8 +389,7 @@ var convertValueToPoint = function (input) {
     var B = (input) % (numberOfPointsY);
     if (B === 0) {B = numberOfPointsY;}
     var A = (input - B) / numberOfPointsY + 1;
-    A--;
-    B--;
+    A--; B--;
     return grid[A][B];
 };
 
@@ -575,7 +574,7 @@ var initializeScoreboard = function () {
     text('Win by creating Two Separate Paths!', 2 , factorY/2);
 };
 
-var reDrawBoard = function () {
+var updateScore = function () {
     noStroke(); fill(255,255,255); 
     rect(factorX , height - factorY/2, factorX/2 ,factorY/2 );
     stroke(255,255,255); fill(0,0,0); textSize(regularFontSize); 
@@ -729,12 +728,27 @@ var areAllChainsCompleted = function(AllReds, AllBlues) {
 var victoryDance = function () {
     // Sequence of events that occurrs when a game is completed.
     
-    fill(255, 255, 255); stroke(255, 255, 255);
-    rect(0,0,width,width/8);
-    fill(31, 194, 102); stroke(10, 10, 10); textSize(width/8);
-    text("You Win!", 10, width/8+1);
-    fill(0,0,0); textSize(regularFontSize);
-    text('Click Anywhere to Restart.', width/3, height - width/16);
+    // draw Green Border around the Screen
+    fill(10,200,10); stroke(10,200,10);
+    rect(0,0, factorX/2, height);       //Left border
+    rect(0,0, width, factorY/2);        //Top border
+    rect(width - factorX/2, 0, factorX/2, height) //Right border
+    rect(0, height - factorY/2, width, factorY/2) //Bottom border
+
+    // draw border around canvas and points, for emphasis.
+    noFill(); stroke(0,0,0);
+    strokeWeight(1);
+    rect(1,1, width-1, height-1);
+    rect(factorX/2, factorY/2, width - factorX, height - factorY);
+
+    // draw "you Win!"
+    fill(0,0,0); stroke(10, 10, 10); textSize(factorX/2 - 1);
+    text("You Win!"+" ~ "+swapCounter+"  swaps used!"+" ~ ", 2,factorY/2 - 2);
+
+
+    // draw "click anywhere to restart"
+    fill(0,0,0); textSize(factorY/2 -1);
+    text('Click Anywhere to Restart.', 2, height-2);
 };
 
 
@@ -815,6 +829,13 @@ var savedPA; var savedPB;
 
 // ===========================================================================
 mouseClicked = function() { 
+    interactionFunction();
+}
+keyTyped = function() {
+    interactionFunction();
+}
+
+var interactionFunction = function () {
     // Function that occurs whenever the mouse is clicked.
     // Highlights a point if there is nothing currently selected,
     // Swaps points if there is.
@@ -828,58 +849,68 @@ mouseClicked = function() {
     var myA = getPointYouClicked(mouseX, factorX, numberOfPointsX);
     var myB = getPointYouClicked(mouseY, factorY, numberOfPointsY);
     
-    if (myA !== '_' && myB !== '_'){
+    if ((myA !== '_') && (myB !== '_')){
         // This happens whenever you successfully click on a point.
         
         myA--; myB--;
-        // println(savedPA + ',' + savedPB);
 
         if (savedPToggle === true) {
             // This happens when you have a point selected already,
-            // and you click on a point.
-        
-            if (savedPA === myA && savedPB === myB) {
-                grid[myA][myB].highlight(false);
-            } else {
-                // You've clicked on something other than the selected point.
+            // and then you click on a point.
 
-                // Deactivate the current selected point.
-                grid[savedPA][savedPB].highlight(false);
+            // Always deselect the currently selected point.
+            grid[savedPA][savedPB].highlight(false);
+
+            if ((savedPA === myA) && (savedPB === myB)) {
+                // you clicked on the same point again...
+                savedPA = -1; savedPB = -1; savedPToggle = false;
                 clearBoard();
+                drawGridLines();
+                drawAllPoints();
+                return;
+            }
 
-                // Swap to the new point of a different color
-                if (grid[savedPA][savedPB].color !== grid[myA][myB].color) {
-                    grid[savedPA][savedPB].swap(grid[myA][myB]);
-                    swapCounter++;
-                } else {
+            if (!(savedPA === myA && savedPB === myB)) {
+                // You've clicked on a point, other than the selected point.
 
+                if (grid[savedPA][savedPB].color === grid[myA][myB].color) {
                     // Clicking on the same color switches the selector over
                     // to that point, and does NOT count as a swap.
+
                     grid[myA][myB].highlight(true);
                     savedPA = myA; savedPB = myB;
                     drawGridLines();
                     drawAllPoints();
                     return;
                 }
-                
-                //println(grid[savedPA][savedPB].color);
-                reDrawBoard();
-                checkForVictory();
-            }
-          
-            savedPA = -1; savedPB = -1;
-            savedPToggle = false;
-            
-        } else {
+                if (grid[savedPA][savedPB].color !== grid[myA][myB].color) {
+                    // If the colors are different, SWAP!
 
-            grid[myA][myB].highlight(true);
+                    grid[savedPA][savedPB].swap(grid[myA][myB]);
+                    savedPA = -1; savedPB = -1; savedPToggle = false;
+                    swapCounter++;
+                    updateScore();
+                    clearBoard();
+                    drawGridLines();
+                    drawAllPoints();
+                    checkForVictory();
+                    return;
+                }
+            }
+        return;
+
+        } else {
+            // You clicked on a point and there's no currently selected one.
+            // Clicked Point becomes the selected one!
+
             savedPA = myA; savedPB = myB;
             savedPToggle = true;
+            clearBoard();
+            grid[myA][myB].highlight(true);
+            drawGridLines();
+            drawAllPoints();
+            return;
         }
-
-
-        drawGridLines();
-        drawAllPoints();
     }
 };
 // ---------------------------------------------------------------------------
@@ -927,19 +958,6 @@ var startupProcedure = function () {
 // Run automatically the first time the page is loaded.
 startupProcedure();
 
-
-function redrawEvent() {
-    defineGlobalVars();
-    updateAllPointLocations();
-    clearCanvas();
-    drawGridLines();
-    drawAllPoints();
-};
-
-function test() {
-    fill( 155, 155, 255);
-    rect(0,0,120,120);
-} ;     
 
 // ================================================
 // The continous DRAW FUNCTION
